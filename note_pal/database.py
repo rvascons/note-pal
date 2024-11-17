@@ -14,8 +14,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             description TEXT NOT NULL,
             name TEXT NOT NULL,
-            context TEXT NOT NULL CHECK (context IN ('work', 'personal', 'project')),
-            status TEXT NOT NULL CHECK (status IN ('draft', 'done', 'delivered')),
+            context TEXT NOT NULL CHECK (context IN ('bug', 'feature', 'architecture', 'external', 'other')),
+            status TEXT NOT NULL CHECK (status IN ('pending', 'delivered')),
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )

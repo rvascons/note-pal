@@ -1,14 +1,15 @@
 # Note-Pal
 
-Note-Pal is a Command Line Interface (CLI) application for managing notes directly from your terminal. It allows you to add, list, and organize notes with various options and filters. The project is built using Python and will be packaged using Poetry for easy distribution.
+Note-Pal is a Command Line Interface (CLI) application designed to help software engineers quickly capture and manage notes during their daily work. It was created to address the common issue of forgetting important activities or tasks that need to be reported in daily team meetings.
 
 ## Features
 
-- **Add Notes**: Create new notes with descriptions, contexts, statuses, and optional names.
-- **List Notes**: Display notes with filtering options by context and status.
-- **Customizable Output**: Choose which fields to display when listing notes.
-- **Data Storage**: Uses SQLite for efficient local data management.
-- **Easy to Use**: Built with [Typer](https://typer.tiangolo.com/) for intuitive CLI commands.
+- **Quick Note Taking**: Instantly add notes with descriptions, contexts, statuses, and optional names.
+- **Short-Term Focus**: Notes are intended to be temporary, serving as a reminder until the next daily meeting.
+- **Tagging System**: Associate tags or contexts with notes to categorize them (e.g., work, personal, project).
+- **Status Management**: Mark notes as done after they've been reported or addressed.
+- **Summarization**: List and review notes to create a brief summary for daily reports.
+- **Easy Reset**: After marking notes as done, start fresh for the next day.
 
 ## Installation
 
@@ -20,21 +21,29 @@ After installing Note-Pal, use the following commands:
 
 ### Add a Note
 ```bash
-note-pal add "Description of your note" work --status draft --name "Optional Name"
+note-pal add "Fixed a critical bug in the authentication module" work --name "Auth Bug Fix"
 ```
 - description: Description of the note.
-- context: Context of the note (work, personal, project).
-- --status, -s: (Optional) Status of the note (draft, done, delivered). Defaults to draft.
+- context: Context of the note (bug, feature, architecture, external, other).
+- --status, -s: (Optional) Status of the note (pending, delivered). Defaults to pending.
 - --name, -n: (Optional) Name of the note. Defaults to the current timestamp.
 
 ### List Notes
 ```bash
-note-pal list --context --status --filter-context work --filter-status draft
+note-pal list --context --status --filter-context bug --time-frame "last day"
 ```
 - --context, -c: Show the context in the output.
 - --status, -s: Show the status in the output.
-- --filter-context, -fc: Filter notes by context (work, personal, project).
-- --filter-status, -fs: Filter notes by status (draft, done, delivered).
+- --filter-context, -fc: Filter notes by context (bug, feature, architecture, external, other).
+- --filter-status, -fs: Filter notes by status (pending, delivered).
+- --time-frame, -t: Specify the time frame for listing notes ("last day", "last 7 days", "all time"). If not provided, it defaults to showing notes from all time with status pending.
+
+### Mark Notes as Delivered
+```bash
+note-pal mark [DAYS]
+```
+- DAYS: (Optional) Number of days. Notes from N days ago and earlier will be marked as delivered.
+If DAYS is not provided, all pending notes will be marked as delivered.
 
 ## Examples
 **Add a New Note**
@@ -42,14 +51,29 @@ note-pal list --context --status --filter-context work --filter-status draft
 note-pal add "Finish the project documentation" work --name "Documentation Task"
 ```
 
-***List All Notes Showing Context and Status***
+**List Notes from the Last Day**
 ```bash
-note-pal list --context --status
+note-pal list --time-frame "last day"
 ```
 
-***List Notes Filtered by Context***
+***List All Pending Notes***
 ```bash
-note-pal list --filter-context personal
+note-pal list
+```
+
+***List Notes Filtered by Context and Time Frame***
+```bash
+note-pal list --filter-context bug --time-frame "last 7 days"
+```
+
+***Mark All Notes as Delivered***
+```bash
+note-pal mark
+```
+
+***Mark notes from 2 days ago and earlier as delivered***
+```bash
+note-pal mark 2
 ```
 
 ## Database

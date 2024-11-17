@@ -6,7 +6,7 @@ class NoteRepository:
         init_db()
         self.conn = get_db_connection()
             
-    def get_all(self, context_filter=None, status_filter=None):
+    def get_all(self, context_filter=None, status_filter=None, date_filter=None):
         c = self.conn.cursor()
         query = 'SELECT * FROM notes'
         params = []
@@ -18,22 +18,30 @@ class NoteRepository:
         if status_filter:
             conditions.append('status = ?')
             params.append(status_filter)
+        if date_filter:
+            conditions.append('created_at >= ?')
+            params.append(date_filter.strftime('%Y-%m-%d %H:%M:%S'))
         if conditions:
             query += ' WHERE ' + ' AND '.join(conditions)
+        query += ' ORDER BY created_at DESC'
 
         c.execute(query, params)
         return c.fetchall()
 
     def get_by_id(self, task_id):
         c = self.conn.cursor()
-        c.execute('SELECT * FROM tasks WHERE id = ?', (task_id,))
+        c.execute('SELECT * FROM notes WHERE id = ?', (task_id,))
+        return c.fetchone()
+    
+    def get_by_name(self, name):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM notes WHERE name = ?', (name,))
         return c.fetchone()
 
-    def create(self, description, context, name, status = 'draft' ):
+    def create(self, description, context, name, status = 'pending' ):
         if not name:
             name = datetime.now().isoformat()
-            
-        print(description, context, name, status)
+    
         c = self.conn.cursor()
         c.execute('''
             INSERT INTO notes (description, context, name, status)
@@ -41,19 +49,37 @@ class NoteRepository:
         ''', (description, context, name, status))
         self.conn.commit()
 
-    def update(self, task_id, description, status, updated_at):
+    def update(self, name, description, status, context, updated_at):
         c = self.conn.cursor()
         c.execute('''
-            UPDATE tasks
-            SET description = ?, status = ?, updated_at = ?
-            WHERE id = ?
-        ''', (description, status, updated_at, task_id))
+            UPDATE notes
+            SET description = ?, status = ?, context = ?, updated_at = ?
+            WHERE name = ?
+        ''', (description, status, context, updated_at, name))
         self.conn.commit()
-
+        
     def delete(self, task_id):
         c = self.conn.cursor()
         c.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
         self.conn.commit()
+
+    def mark_notes(self, date_before=None):
+        c = self.conn.cursor()
+        params = []
+        query = '''
+            UPDATE notes
+            SET status = 'delivered', updated_at = ?
+            WHERE status = 'pending'
+        '''
+        params.append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+        if date_before:
+            query += ' AND created_at <= ?'
+            params.append(date_before.strftime('%Y-%m-%d %H:%M:%S'))
+
+        c.execute(query, params)
+        self.conn.commit()
+        return c.rowcount  # Returns the number of rows updated
 
     def close(self):
         self.conn.close()
